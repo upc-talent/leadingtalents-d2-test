@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Yousef IDP — Submit & Score</title>
+<style>
+  :root {
+    --navy: #1A1A2E;
+    --blue: #1565C0;
+    --gold: #C8960C;
+    --gold-light: #F4C842;
+    --green: #2E7D32;
+    --red: #C62828;
+    --orange: #E65100;
+    --purp: #6A1B9A;
+    --bg: #F8F9FF;
+    --card: #FFFFFF;
+    --border: #E2E8F0;
+    --text: #1A1A2E;
+    --muted: #64748B;
+    --lblue: #DBEAFE;
+    --lgreen: #DCFCE7;
+    --lred: #FEE2E2;
+    --lgold: #FEF9C3;
+    --lpurp: #EDE9FE;
+    --lorg: #FFF0E0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; padding-bottom:40px; }
+
+  .header { background:var(--navy); padding:20px 16px 16px; position:sticky; top:0; z-index:10; }
+  .header-eyebrow { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold-light); margin-bottom:4px; }
+  .header-title { font-size:18px; font-weight:700; color:white; }
+  .header-sub { font-size:12px; color:#AAAACC; margin-top:3px; }
+  .gold-bar { height:3px; background:var(--gold); margin-top:12px; }
+
+  .wrap { padding:16px; max-width:520px; margin:0 auto; }
+
+  .phase-bar { display:flex; gap:6px; margin-bottom:20px; }
+  .phase-dot { height:4px; border-radius:2px; flex:1; background:var(--border); transition:background 0.3s; }
+  .phase-dot.active { background:var(--blue); }
+  .phase-dot.done { background:var(--green); }
+
+  .card { background:var(--card); border-radius:16px; border:1px solid var(--border); padding:20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  .card-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:14px; }
+
+  .profile-strip { background:var(--lblue); border-radius:12px; padding:12px 14px; margin-bottom:16px; border-left:4px solid var(--blue); }
+  .profile-name { font-size:16px; font-weight:700; color:var(--blue); }
+  .profile-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .field-label { font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; margin-top:14px; display:flex; align-items:center; gap:6px; }
+  .field-label:first-of-type { margin-top:0; }
+
+  .cat-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .cat-exp { background:var(--lblue); color:var(--blue); }
+  .cat-soc { background:var(--lpurp); color:var(--purp); }
+  .cat-str { background:var(--lorg); color:var(--orange); }
+
+  select {
+    width:100%; padding:13px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-size:15px; color:var(--text); background:white; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:36px;
+    transition:border-color 0.2s;
+  }
+  select:focus { outline:none; border-color:var(--blue); }
+
+  textarea {
+    width:100%; padding:13px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-size:15px; color:var(--text); font-family:inherit; resize:vertical; min-height:110px;
+    transition:border-color 0.2s;
+  }
+  textarea:focus { outline:none; border-color:var(--blue); }
+
+  .hint { font-size:12px; color:var(--muted); font-style:italic; margin-top:6px; line-height:1.5; }
+
+  .firm-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+  .firm-btn { padding:15px 10px; border:2px solid var(--border); border-radius:12px; background:white; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; text-align:center; transition:all 0.15s; }
+  .firm-btn.selected { border-color:var(--blue); background:var(--lblue); color:var(--blue); }
+  .firm-btn:active { transform:scale(0.97); }
+
+  .btn { width:100%; padding:16px; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; transition:all 0.2s; letter-spacing:0.3px; margin-top:4px; }
+  .btn-primary { background:var(--blue); color:white; }
+  .btn-primary:active { transform:scale(0.98); }
+  .btn-primary:disabled { background:#94A3B8; cursor:not-allowed; }
+  .btn-gold { background:var(--gold); color:var(--navy); }
+  .btn-ghost { background:transparent; color:var(--blue); border:1.5px solid var(--blue); margin-top:10px; }
+
+  .loading-wrap { text-align:center; padding:40px 20px; }
+  .spinner { width:44px; height:44px; border:4px solid var(--border); border-top-color:var(--blue); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { font-size:15px; color:var(--muted); }
+  .loading-sub { font-size:12px; color:#94A3B8; margin-top:4px; }
+
+  .score-hero { text-align:center; padding:24px 0 16px; }
+  .score-coins { font-size:64px; font-weight:800; color:var(--gold); line-height:1; }
+  .score-max { font-size:18px; color:var(--muted); font-weight:500; }
+  .score-label { font-size:13px; color:var(--muted); margin-top:6px; }
+
+  .verdict-bar { border-radius:12px; padding:14px 16px; margin-bottom:16px; }
+  .verdict-strong { background:var(--lgreen); border-left:4px solid var(--green); }
+  .verdict-good { background:var(--lgold); border-left:4px solid var(--gold); }
+  .verdict-develop { background:#FEF3C7; border-left:4px solid #D97706; }
+  .verdict-weak { background:var(--lred); border-left:4px solid var(--red); }
+  .verdict-title { font-size:14px; font-weight:700; }
+  .verdict-text { font-size:13px; margin-top:4px; line-height:1.5; }
+
+  .score-row { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .score-row:last-child { border-bottom:none; }
+  .score-icon { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; margin-top:1px; font-weight:700; }
+  .icon-correct { background:var(--lgreen); color:var(--green); }
+  .icon-wrong { background:var(--lred); color:var(--red); }
+  .icon-partial { background:var(--lgold); color:var(--gold); }
+  .icon-blank { background:#F1F5F9; color:var(--muted); }
+  .score-content { flex:1; }
+  .score-item-label { font-size:13px; font-weight:600; color:var(--text); }
+  .score-item-detail { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; }
+  .score-item-coins { font-size:13px; font-weight:700; color:var(--gold); flex-shrink:0; }
+
+  .report-section { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); padding:12px 0 6px; border-top:1px solid var(--border); margin-top:4px; }
+  .report-section:first-child { border-top:none; padding-top:0; }
+
+  .model-answer { border-radius:10px; padding:12px 14px; margin-top:8px; }
+  .model-answer-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:5px; }
+  .model-answer-text { font-size:13px; line-height:1.5; }
+
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Leading Talents · Day 2</div>
+  <div class="header-title">Yousef — Development Plan</div>
+  <div class="header-sub">Submit your firm's plan for scoring</div>
+  <div class="gold-bar"></div>
+</div>
+
+<div class="wrap">
+
+  <div class="phase-bar">
+    <div class="phase-dot active" id="ph1"></div>
+    <div class="phase-dot" id="ph2"></div>
+    <div class="phase-dot" id="ph3"></div>
+  </div>
+
+  <!-- SCREEN 1: Firm -->
+  <div id="screen1">
+    <div class="card">
+      <div class="card-title">Which firm are you?</div>
+      <div class="firm-grid">
+        <div class="firm-btn" onclick="selectFirm(this,'TAB')">TAB</div>
+        <div class="firm-btn" onclick="selectFirm(this,'ALFURSAN')">ALFURSAN</div>
+        <div class="firm-btn" onclick="selectFirm(this,'CHAMPIONS')">CHAMPIONS</div>
+        <div class="firm-btn" onclick="selectFirm(this,'WINNERS')">WINNERS</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn1" onclick="goScreen2()" disabled>Continue →</button>
+  </div>
+
+  <!-- SCREEN 2: IDP -->
+  <div id="screen2" class="hidden">
+
+    <div class="profile-strip">
+      <div class="profile-name">Yousef</div>
+      <div class="profile-meta">Effective Performer · 6 years · Pharmacist · Tahlia Branch</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Development Plan</div>
+
+      <!-- Objective FIRST -->
+      <div class="field-label">Development Objective</div>
+      <textarea id="objective" placeholder="What changes · By how much · By when"></textarea>
+      <p class="hint">Be specific. A strong objective names what will change, how you'll measure it, and by when.</p>
+
+      <!-- Then toolkit options -->
+      <div class="field-label" style="margin-top:20px"><span class="cat-badge cat-exp">Experiential</span> Option</div>
+      <select id="exp1">
+        <option value="">Select…</option>
+        <option>Job Shadowing</option>
+        <option>Job Rotation</option>
+        <option>Short-term Assignment</option>
+        <option>Long-term Assignment</option>
+        <option>Managing a Project</option>
+        <option>Action Learning</option>
+        <option>Job Enrichment</option>
+        <option>Job Enlargement</option>
+        <option value="None">None / Left blank</option>
+      </select>
+      <textarea id="expNotes" placeholder="Notes — who, how, how long, why this option…" style="margin-top:8px;min-height:70px"></textarea>
+
+      <div class="field-label"><span class="cat-badge cat-soc">Social</span> Option</div>
+      <select id="soc1">
+        <option value="">Select…</option>
+        <option>Coaching</option>
+        <option>Mentoring</option>
+        <option>Feedback Sessions</option>
+        <option>Experience Groups</option>
+        <option value="None">None / Left blank</option>
+      </select>
+      <textarea id="socNotes" placeholder="Notes — who conducts it, frequency, focus areas…" style="margin-top:8px;min-height:70px"></textarea>
+
+      <div class="field-label"><span class="cat-badge cat-str">Structured</span> Option</div>
+      <select id="str1">
+        <option value="">Select…</option>
+        <option>Technical Training</option>
+        <option>Non-Technical Training</option>
+        <option>Self-paced Learning</option>
+        <option>Reading & Studying</option>
+        <option value="None">None / Left blank</option>
+      </select>
+      <textarea id="strNotes" placeholder="Notes — what program, provider, format, duration…" style="margin-top:8px;min-height:70px"></textarea>
+
+    </div>
+
+    <button class="btn btn-primary" onclick="submitPlan()">Submit Plan →</button>
+    <button class="btn btn-ghost" onclick="goScreen1()">← Back</button>
+  </div>
+
+  <!-- SCREEN 3: Loading -->
+  <div id="screen3" class="hidden">
+    <div class="card">
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Reviewing your plan…</div>
+        <div class="loading-sub" id="loadingSub">Checking each category against the rubric</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: Results -->
+  <div id="screen4" class="hidden">
+
+    <div class="card">
+      <div class="score-hero">
+        <div class="score-coins" id="totalCoins">0</div>
+        <div class="score-max">out of 7 coins</div>
+        <div class="score-label" id="firmLabel"></div>
+      </div>
+    </div>
+
+    <div id="verdictBox" class="verdict-bar">
+      <div class="verdict-title" id="verdictTitle"></div>
+      <div class="verdict-text" id="verdictText"></div>
+    </div>
+
+    <div class="card" id="breakdownCard"></div>
+
+    <!-- Model answer — always shown -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">Model Answer</div>
+
+      <div class="model-answer" style="background:var(--lblue)">
+        <div class="model-answer-title" style="color:var(--blue)">Experiential</div>
+        <div class="model-answer-text" style="color:var(--navy)">Short-term Assignment — places Yousef in a new environment or unfamiliar process, directly targeting resistance to change.</div>
+      </div>
+
+      <div class="model-answer" style="background:var(--lpurp)">
+        <div class="model-answer-title" style="color:var(--purp)">Social</div>
+        <div class="model-answer-text" style="color:var(--navy)">Feedback Sessions or Coaching — structured conversations anchored to specific behaviors. Both are correct.</div>
+      </div>
+
+      <div class="model-answer" style="background:var(--lorg)">
+        <div class="model-answer-title" style="color:var(--orange)">Structured</div>
+        <div class="model-answer-text" style="color:var(--navy)">Non-Technical Training — a behavioral or adaptability program. Technical Training is the most common wrong answer: Yousef's knowledge is already strong. The gap is behavioral.</div>
+      </div>
+
+      <div class="model-answer" style="background:var(--lgold)">
+        <div class="model-answer-title" style="color:var(--gold)">Strong Objective</div>
+        <div class="model-answer-text" style="color:var(--navy)">"Yousef will demonstrate measurable improvement in adaptability by completing a structured assignment in a new process and receiving a positive 360 score on change readiness within 90 days."</div>
+      </div>
+    </div>
+
+    <button class="btn btn-gold" onclick="resetAll()">Submit another plan</button>
+  </div>
+
+</div>
+
+<script>
+let selectedFirm = '';
+
+function selectFirm(el, name) {
+  document.querySelectorAll('.firm-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFirm = name;
+  document.getElementById('btn1').disabled = false;
+}
+
+function setPhase(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('ph'+i);
+    el.className = 'phase-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+  });
+}
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function getVal(id) { return document.getElementById(id).value; }
+
+function goScreen1() {
+  show('screen1'); hide('screen2'); setPhase(1);
+}
+
+function goScreen2() {
+  hide('screen1'); show('screen2'); setPhase(2);
+  window.scrollTo(0,0);
+}
+
+/* ===================== SCORING ENGINE ===================== */
+/* Pure client-side rubric scoring — no external API needed,   */
+/* so this works as a static GitHub Pages site.                */
+
+const EXP_MAP = {
+  'Short-term Assignment':    { score:1, verdict:'correct',    reason:'Directly exposes Yousef to a new, unfamiliar process — targets the adaptability gap head-on.' },
+  'Action Learning':          { score:1, verdict:'acceptable', reason:'A reasonable stretch experience, though a Short-term Assignment is the sharpest fit for this gap.' },
+  'Managing a Project':       { score:1, verdict:'acceptable', reason:'Creates some exposure to change, though a more direct unfamiliar-process assignment would fit better.' },
+  'Job Enlargement':          { score:1, verdict:'acceptable', reason:'Adds new responsibilities, which helps, though it is a softer push than a Short-term Assignment.' },
+  'Job Shadowing':            { score:0, verdict:'wrong',      reason:"Mostly observational — doesn't push Yousef to actually operate in a new or changing process." },
+  'Job Rotation':             { score:0, verdict:'wrong',      reason:"A longer-term move to a different role, but doesn't specifically target resistance to change." },
+  'Long-term Assignment':     { score:0, verdict:'wrong',      reason:'Too open-ended for this gap — a short, focused exposure to change is the better fit.' },
+  'Job Enrichment':           { score:0, verdict:'wrong',      reason:'Adds depth to the current role rather than exposing Yousef to something new or changing.' },
+  'None':                     { score:0, verdict:'blank',      reason:'No experiential option selected.' },
+  '':                         { score:0, verdict:'blank',      reason:'No experiential option selected.' }
+};
+
+const SOC_MAP = {
+  'Coaching':          { score:1, verdict:'correct',    reason:'Structured, ongoing conversations anchored to specific behaviors — builds real accountability.' },
+  'Feedback Sessions': { score:1, verdict:'correct',    reason:'Direct, behavior-specific feedback is exactly what closes a follow-through gap.' },
+  'Mentoring':         { score:1, verdict:'acceptable', reason:'Valuable support, though less focused on specific behavioral accountability than coaching or feedback.' },
+  'Experience Groups': { score:1, verdict:'acceptable', reason:'Useful peer learning, though it is less targeted than direct coaching or feedback.' },
+  'None':              { score:0, verdict:'blank',      reason:'No social option selected.' },
+  '':                  { score:0, verdict:'blank',      reason:'No social option selected.' }
+};
+
+const STR_MAP = {
+  'Non-Technical Training': { score:1, verdict:'correct',    reason:"Targets the behavioral/adaptability gap rather than knowledge, which is already Yousef's strength." },
+  'Self-paced Learning':    { score:1, verdict:'acceptable', reason:'Can work if focused on behavioral content, though a structured non-technical program is the sharper fit.' },
+  'Reading & Studying':     { score:1, verdict:'acceptable', reason:'A lighter-touch option — useful as a supplement, less so as the main lever for a behavioral gap.' },
+  'Technical Training':     { score:0, verdict:'wrong',      reason:"The most common mistake here — Yousef's technical knowledge is already strong, so this won't close the gap." },
+  'None':                   { score:0, verdict:'blank',      reason:'No structured option selected.' },
+  '':                       { score:0, verdict:'blank',      reason:'No structured option selected.' }
+};
+
+function scoreObjective(text) {
+  const t = (text || '').trim();
+  const hasContent = t.length >= 15;
+  const measureRx = /(\d|%|percent|score|rating|rate|level|increase|decrease|reduce|improve|achieve|complete|successfully|pass|consisten)/i;
+  const timeRx = /(\bday\b|\bdays\b|\bweek\b|\bweeks\b|\bmonth\b|\bmonths\b|quarter|\bq[1-4]\b|\byear\b|within|by\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))/i;
+
+  const has_what = hasContent;
+  const has_how_much = measureRx.test(t);
+  const has_by_when = timeRx.test(t);
+
+  const score = (has_what && has_how_much && has_by_when) ? 2 : 0;
+
+  let reason;
+  if (score === 2) {
+    reason = 'Names what will change, gives a measurable target, and sets a clear timeframe.';
+  } else {
+    const missing = [];
+    if (!has_what) missing.push('a clear description of what changes');
+    if (!has_how_much) missing.push('a measurable target');
+    if (!has_by_when) missing.push('a specific timeframe');
+    reason = 'Missing ' + missing.join(' and ') + '.';
+  }
+
+  return { score, has_what, has_how_much, has_by_when, reason };
+}
+
+function scoreDualGap(objectiveText, expVerdict, socOption) {
+  const t = (objectiveText || '').toLowerCase();
+  const adaptTextHit = /(adapt|change|flexib|technolog|new process)/i.test(t);
+  const leadTextHit = /(leadership|follow.?through|accountab)/i.test(t);
+
+  const adaptability_addressed = (expVerdict === 'correct' || expVerdict === 'acceptable') || adaptTextHit;
+  const leadership_addressed = (socOption === 'Coaching' || socOption === 'Feedback Sessions') || leadTextHit;
+
+  const score = (adaptability_addressed && leadership_addressed) ? 2 : 0;
+  let reason;
+  if (score === 2) {
+    reason = 'The plan as a whole addresses both the adaptability gap and the leadership follow-through gap.';
+  } else {
+    const missing = [];
+    if (!adaptability_addressed) missing.push('adaptability/resistance to change');
+    if (!leadership_addressed) missing.push('leadership follow-through');
+    reason = 'The plan does not clearly address: ' + missing.join(' and ') + '.';
+  }
+  return { score, adaptability_addressed, leadership_addressed, reason };
+}
+
+function buildFeedback(total, exp, soc, str, obj, dual) {
+  const strengths = [];
+  const improve = [];
+
+  if (exp.verdict === 'correct' || exp.verdict === 'acceptable') strengths.push('a solid experiential pick');
+  else improve.push('choose an experiential option that creates real exposure to change, like a Short-term Assignment');
+
+  if (soc.verdict === 'correct' || soc.verdict === 'acceptable') strengths.push('a social option that supports accountability');
+  else improve.push('add a social option such as Coaching or Feedback Sessions to build accountability');
+
+  if (str.verdict === 'correct' || str.verdict === 'acceptable') strengths.push('a structured option aligned to the behavioral gap');
+  else if (str.verdict === 'wrong') improve.push("swap technical training for a non-technical program — Yousef's knowledge isn't the gap");
+  else improve.push('add a structured learning option');
+
+  if (obj.score === 2) strengths.push('a specific, measurable objective');
+  else improve.push('sharpen the objective so it states what changes, by how much, and by when');
+
+  if (dual.score === 2) strengths.push('coverage of both identified gaps');
+  else improve.push('make sure the overall plan addresses both adaptability and leadership follow-through');
+
+  let opener;
+  if (total >= 6) opener = 'Strong plan overall.';
+  else if (total >= 4) opener = 'A workable plan with a few gaps.';
+  else if (total >= 2) opener = 'This plan has the right idea but misses some key elements.';
+  else opener = 'This plan needs significant rework.';
+
+  const strengthLine = strengths.length ? ' It includes ' + strengths.slice(0,2).join(' and ') + '.' : '';
+  const improveLine = improve.length ? ' To strengthen it, ' + improve[0] + '.' : '';
+
+  return opener + strengthLine + improveLine;
+}
+
+function runScoring(firm, objective, exp, expNotes, soc, socNotes, str, strNotes) {
+  const expR = EXP_MAP[exp] || EXP_MAP[''];
+  const socR = SOC_MAP[soc] || SOC_MAP[''];
+  const strR = STR_MAP[str] || STR_MAP[''];
+
+  const objR = scoreObjective(objective);
+  const dualR = scoreDualGap(objective, expR.verdict, soc);
+
+  const total = expR.score + socR.score + strR.score + objR.score + dualR.score;
+
+  const overall_feedback = buildFeedback(total, expR, socR, strR, objR, dualR);
+
+  return {
+    option_scores: {
+      experiential: { option: exp || 'None', score: expR.score, verdict: expR.verdict, reason: expR.reason },
+      social:       { option: soc || 'None', score: socR.score, verdict: socR.verdict, reason: socR.reason },
+      structured:   { option: str || 'None', score: strR.score, verdict: strR.verdict, reason: strR.reason }
+    },
+    objective_score: objR,
+    dual_gap_score: dualR,
+    total,
+    overall_feedback
+  };
+}
+/* =================== END SCORING ENGINE ==================== */
+
+function submitPlan() {
+  const exp = getVal('exp1');
+  const soc = getVal('soc1');
+  const str = getVal('str1');
+  const objective = getVal('objective').trim();
+
+  if (!exp || !soc || !str) {
+    alert('Please select an option for all three toolkit categories.');
+    return;
+  }
+  if (!objective) {
+    alert('Please write a development objective before submitting.');
+    return;
+  }
+
+  hide('screen2'); show('screen3'); setPhase(3);
+  window.scrollTo(0,0);
+
+  const msgs = [
+    ['Reviewing your plan…','Checking each category against the rubric'],
+    ['Scoring toolkit options…','Experiential, Social, Structured'],
+    ['Evaluating objective…','What changes · by how much · by when'],
+    ['Checking gap coverage…','Adaptability & leadership follow-through'],
+  ];
+  let mi = 0;
+  const interval = setInterval(() => {
+    mi = (mi+1) % msgs.length;
+    document.getElementById('loadingText').textContent = msgs[mi][0];
+    document.getElementById('loadingSub').textContent = msgs[mi][1];
+  }, 380);
+
+  const expNotes = getVal('expNotes').trim();
+  const socNotes = getVal('socNotes').trim();
+  const strNotes = getVal('strNotes').trim();
+
+  setTimeout(() => {
+    clearInterval(interval);
+    const result = runScoring(selectedFirm, objective, exp, expNotes, soc, socNotes, str, strNotes);
+    hide('screen3'); show('screen4');
+    renderResults(result);
+  }, 1500);
+}
+
+function renderResults(r) {
+  document.getElementById('totalCoins').textContent = r.total;
+  document.getElementById('firmLabel').textContent = selectedFirm + ' · Leading Talents Day 2';
+
+  const vBox = document.getElementById('verdictBox');
+  const vTitle = document.getElementById('verdictTitle');
+  const vText = document.getElementById('verdictText');
+  if (r.total >= 6) { vBox.className='verdict-bar verdict-strong'; vTitle.textContent='🏆 Outstanding plan'; }
+  else if (r.total >= 4) { vBox.className='verdict-bar verdict-good'; vTitle.textContent='✓ Solid plan — room to sharpen'; }
+  else if (r.total >= 2) { vBox.className='verdict-bar verdict-develop'; vTitle.textContent='△ Developing — key gaps in the plan'; }
+  else { vBox.className='verdict-bar verdict-weak'; vTitle.textContent='✗ Significant gaps — review the model answer'; }
+  vText.textContent = r.overall_feedback;
+
+  const card = document.getElementById('breakdownCard');
+  card.innerHTML = '';
+
+  const section = (t) => {
+    const d = document.createElement('div');
+    d.className = 'report-section'; d.textContent = t;
+    card.appendChild(d);
+  };
+
+  const row = (label, detail, coins, verdict) => {
+    const icons = {correct:'✓',acceptable:'✓',wrong:'✗',blank:'—'};
+    const cls = {correct:'icon-correct',acceptable:'icon-partial',wrong:'icon-wrong',blank:'icon-blank'};
+    const d = document.createElement('div');
+    d.className = 'score-row';
+    d.innerHTML = `
+      <div class="score-icon ${cls[verdict]||'icon-blank'}">${icons[verdict]||'—'}</div>
+      <div class="score-content">
+        <div class="score-item-label">${label}</div>
+        <div class="score-item-detail">${detail}</div>
+      </div>
+      <div class="score-item-coins">${coins > 0 ? '+'+coins : '—'}</div>`;
+    card.appendChild(d);
+  };
+
+  section('Objective');
+  const obj = r.objective_score;
+  const parts = [
+    obj.has_what ? '✓ What changes' : '✗ What changes',
+    obj.has_how_much ? '✓ By how much' : '✗ By how much',
+    obj.has_by_when ? '✓ By when' : '✗ By when',
+  ].join('  ·  ');
+  row('Objective quality', parts + ' — ' + obj.reason, obj.score, obj.score===2?'correct':'wrong');
+
+  section('Toolkit Options');
+  const os = r.option_scores;
+  row('Experiential: '+(os.experiential.option||'Blank'), os.experiential.reason, os.experiential.score, os.experiential.verdict);
+  row('Social: '+(os.social.option||'Blank'), os.social.reason, os.social.score, os.social.verdict);
+  row('Structured: '+(os.structured.option||'Blank'), os.structured.reason, os.structured.score, os.structured.verdict);
+
+  section('Dual Gap Coverage');
+  const dg = r.dual_gap_score;
+  row('Both gaps addressed?',
+    (dg.adaptability_addressed?'✓':'✗')+' Adaptability  ·  '+(dg.leadership_addressed?'✓':'✗')+' Leadership follow-through — '+dg.reason,
+    dg.score, dg.score===2?'correct':'wrong');
+
+  window.scrollTo(0,0);
+}
+
+function resetAll() {
+  selectedFirm = '';
+  document.querySelectorAll('.firm-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('btn1').disabled = true;
+  ['exp1','soc1','str1'].forEach(id=>{ document.getElementById(id).selectedIndex=0; });
+  ['objective','expNotes','socNotes','strNotes'].forEach(id=>{ document.getElementById(id).value=''; });
+  hide('screen2'); hide('screen3'); hide('screen4');
+  show('screen1'); setPhase(1);
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
